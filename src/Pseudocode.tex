@@ -1,0 +1,99 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{fullpage}
+
+\begin{document}
+
+\section*{Pseudocode}
+
+\begin{algorithm}
+\caption{Generating Pseudopeople Data}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{PRINT "Generating Pseudopeople Data"}
+\State \hspace{1cm} \texttt{SET src\_1 TO '[Path to Data]'} 
+\State \hspace{1cm} \texttt{SET src\_2 TO '[Path to Data 2]'} 
+\State \hspace{1cm} \texttt{READ CSV file from src\_1 with headers and tab separator, STORE in df\_1}
+\State \hspace{1cm} \texttt{READ CSV file from src\_2 with headers and tab separator, STORE in df\_2}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Sorting Data}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{SORT df\_1 by columns "last\_name", "first\_name", "middle\_initial", "age", "street\_name" in ascending order}
+\State \hspace{1cm} \texttt{STORE sorted result in df\_1\_sorted}
+\State \hspace{1cm} \texttt{SORT df\_2 by columns "last\_name", "first\_name", "middle\_initial", "age", "street\_name" in ascending order}
+\State \hspace{1cm} \texttt{STORE sorted result in df\_2\_sorted}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Deduplication and Counting Rows}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{REMOVE duplicates from df\_sorted based on all columns except the first column (from index 1 onwards)}
+\State \hspace{1cm} \texttt{STORE the result in df\_deduplicated}
+\State \hspace{1cm} \texttt{COUNT the number of rows in df\_deduplicated}
+\State \hspace{1cm} \texttt{STORE the count result}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{K-mer Generation}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{DEFINE k as 3}
+\State \hspace{1cm} \texttt{DEFINE function generate\_k\_mer with input str\_d:}
+\State \hspace{2cm} \texttt{IF length of str\_d is less than or equal to k:}
+\State \hspace{3cm} \texttt{RETURN a list containing str\_d}
+\State \hspace{2cm} \texttt{ELSE:}
+\State \hspace{3cm} \texttt{RETURN a list of substrings of length k starting from each position in str\_d}
+\State \hspace{1cm} \texttt{DEFINE kmer\_udf as a user-defined function (UDF) to apply generate\_k\_mer to each input sequence}
+\State \hspace{1cm} \texttt{APPLY kmer\_udf to the "last\_name" column of df\_deduplicated}
+\State \hspace{1cm} \texttt{STORE the result in df\_2\_new with a new column "kmers"}
+\State \hspace{1cm} \texttt{ADD a new "id" column to df\_2\_new using row\_number() based on an order of monotonically increasing ID}
+\State \hspace{1cm} \texttt{STORE the result in df\_with\_kmers}
+\State \hspace{1cm} \texttt{DISPLAY the first 10 rows of df\_with\_kmers}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Blocking and Grouping K-mers}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{DEFINE function do\_blocking with input df:}
+\State \hspace{2cm} \texttt{EXPLODE the "kmers" column into individual (kmer, index) pairs}
+\State \hspace{2cm} \texttt{STORE the result in exploded\_df with "kmer" and "index" columns}
+\State \hspace{2cm} \texttt{CONVERT the "kmer" column to lowercase for consistency}
+\State \hspace{2cm} \texttt{GROUP exploded\_df by "kmer" and collect the indices in a list for each unique kmer}
+\State \hspace{2cm} \texttt{STORE the result in blocked\_df}
+\State \hspace{1cm} \texttt{APPLY do\_blocking function to df\_with\_kmers}
+\State \hspace{1cm} \texttt{STORE the result in blocked\_df}
+\State \hspace{1cm} \texttt{DISPLAY the first 5 rows of blocked\_df}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Creating Pairs from Blocking Results}
+\begin{algorithmic}[1]
+\State \textbf{BEGIN}
+\State \hspace{1cm} \texttt{DEFINE function all\_pairs with input df:}
+\State \hspace{2cm} \texttt{CREATE a cross join between df and df, renaming the "list\_indices" column to "id1" in the first DataFrame}
+\State \hspace{2cm} \texttt{AND renaming the "list\_indices" column to "id2" in the second DataFrame}
+\State \hspace{1cm} \texttt{STORE the result of the cross join in df\_cross}
+\State \hspace{1cm} \texttt{APPLY all\_pairs function to df}
+\State \hspace{1cm} \texttt{STORE the result in df\_cross}
+\State \textbf{END}
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}
